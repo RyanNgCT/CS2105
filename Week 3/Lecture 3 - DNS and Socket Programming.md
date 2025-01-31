@@ -191,6 +191,8 @@ Not enough to use the port number to distinctively identify sender $\implies$ ne
 	- `sck.accept()` $\implies$ is a  blocking call 
 	- once the connection is made, no difference between who is the server and the client (code is roughly the same)
 
+	- TCP single threaded $\implies$ next connections will be on hold.
+
 2. UDP uses **packet abstraction** (datagrams )to send messages (in small sizes)
 	- only one socket is needed (regardless of direction and sender) in a USP server
 	- encode destination UP and port
