@@ -58,7 +58,6 @@ These protocols run in hosts systems, consisting of three components.
 ![transport-layer-overview](../assets/transport-layer-overview.png)
 #### IP Datagrams
 - each of these carries $1 \times$ transport later segment (which contains `src_port` and `dst_port`).
-
 ## C. Principles of reliable data transfer
 - should make the least possibly assumptions
 	- fact that the network layer is of "best effort" and is inherently unreliable.
@@ -89,44 +88,52 @@ Hence, the need of end-to-end reliable transfer (or transport) protocol, with th
 #### Finite State Machine
 Used to describe the properties of a sender and receiver
 - is a graph, where the nodes are the state.
-- edges help to tell how to get from one edge to another, might have some conditions.
-- $\exists$ starting edge, but may not have ending state.
+- *directed edges* help to tell how to get from one edge to another, might have some conditions attached to it.
+	- conditions are denoted as "$\frac{Event}{Action \: taken}$"
+- ==$\exists$ starting edge, but *may not* have ending state.==
+
 #### FSM - `rdt 1.0`
-- assume underlying channel is fully reliable
+- assume underlying channel is **fully reliable**
 ![rdt1.0](../assets/rdt1.0.png)
 
-
+- `make_pkt()` and `udt_send()` is contingent on `rdt_send()` being called
 - FSM is relatively simple with one node on both sender and recipient sides
 - wait for call always transitions back to itself
 
-#### FSM - `rdt 2.0`
-- some unreliability in terms of data corruption and bit flips
+#### `rdt 2.0`
+- some unreliability in terms of **data corruption** and **bit flips** ($0 \to 1, 1 \to 0$)
 - other than that channel is perfect
 
-- use of checksums on recipient's end to detect errors and feedback to the sender
-	- recovering from bit errors via mechanisms of ACK / NACKs
-		- acknowledgements: receiver tells sender that packet is OK
-		- negative acks: receiver tells sender that packets has errors (by retransmitting the corrupted packets)
+- use of **checksums** on recipient's end to detect errors and feedback to the sender
+- recovering from bit errors via mechanisms of ACK / NACKs
+	- Acknowledgements (ACK): receiver tells sender that packet is OK
+	- Negative ACKs (NACK): receiver tells sender that packets has errors (by retransmitting the corrupted packets)
 
-	- use of a stop-and-wait protocol
-
+![rdt_2.0_in_action](../assets/rdt_2.0_in_action.png)
+##### Stop-and-wait protocol
+![rdt2.0_fsm](../assets/rdt2.0-fsm.png)
 - Sender will have two states
 	- Wait for Call
 	- Waiting State: only when receive NAK, then retransmit correct packet
 
-- Receiver
-	- Wait of call
+- Receiver will only have one
+	- Wait of call (i.e. receiving packets)
 
 - Fatal Flaw: What is ACK/NAK is corrupted? 
-	- sender doesn't know what happens at the receiver.
-	- need mechanism for detecting duplicates
+	- sender doesn't know what happens at the receiver (i.e. if the ACK sent by the receiver back to the sender is corrupted).
+	- need some mechanism for *detecting duplicates packets* on the recipient's end.
 
-#### FSM - `rdt 2.1`
-- use of a sequence number on sender's end to each packet (sort of as a unique ID)
+#### `rdt 2.1`
+- use of a **sequence number** by the sender to each packet (sort of as a unique ID)
+- sender  still retransmits current packet if ACK/NAK is distorted
 - receiver discards the duplicated ones
 
+![rdt_2.1_in_action](../assets/rdt_2.1_in_action.png)
+##### FSM for `rdt 2.1`
+![rdt2.1-fsm](../assets/rdt2.1-fsm.png)
+
 #### FSM - `rdt 2.2`
-- get rid of NACK, replace with an NACK with ACK sequence number.
+- gets rid of NACK, replace with an NACK with ACK sequence number.
 - no need to send the entire corrupt packet (fewer bytes?)
 
 #### FSM - `rdt 3.0`
@@ -147,11 +154,39 @@ If ACK is delayed, we might have duplicate ACKs receive from the sender side
 
 What if the network channel can now reorder segments (will cause RDT 3.0 will break)
 - as long as no re-arrangement or delay RDT 3.0 will work.
-
-#### Summary of `rdt` protocols
+### Summary of `rdt` protocols, Motivation for Pipelined protocols
 - rdt has bad performance
 - rdt is a *stop and wait protocol*
 - utilization of the link is very low (not leveraging resources properly)
-	- we want $\approx 100\%$ utilization
+	- we want $\approx 100\%$ utilization 
+	- can utilize pipelining, for repeated sends without ACKs (not acknowledged *yet*).
+		- should have sequence numbers must be increased *more bits needed*
+		- buffering at the sender and/or receiver's end (make sure segments are sent and received in order)
 
+- same assumptions as `rdt 3.0`
 ### Go-Back-N
+- also called the cumulative ACK protocol, where ACK $n$ means $1, 2, \ldots \leq n$ are received.
+
+**Properties**
+1. Dark green (ACK-ed)
+2. Light Green (Packets to be sent currently)
+3. Slots (have not sent yet, in sender's buffer)
+4. Window Size of $n$ at the Server $\implies$ up to $n$ packets can be sent at once
+	1. $n$ is finite
+	2. should be modified accordingly to ensure maximum utilization
+
+5. Timer on the window: set for the oldest un-ACK-ed packet 
+	1. timeout $\implies$ all packets currently in the window retransmitted
+	2. will cause server to autosend some packets once the timer is hit
+
+**Recipient**
+
+### Selective Repeat
+- One ACK for each packet, can only move  on when all packets to that point have been ACK-ed
+- buffers the out-of-order packets to prevent sender from having to resend.
+- Times maintained for all un-ACK-ed packets
+	- timer expire, only retransmit target un-ACK-ed packet
+
+
+- `send_base` $\implies$ last unacknowledged packet
+- Inconsistencies: `ACK` missing due to lost or on the way back to sender (i.e. "in-flight")
