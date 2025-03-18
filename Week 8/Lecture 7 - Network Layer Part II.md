@@ -157,6 +157,8 @@ We are looking at the past (it is already the old information), but we still pro
 	- some servers may not even respond to the ICMP Echo request with a response
 		- requires some resources to respond the incoming ICMP Echo requests
 
+- ID field for TCP is unique for every packet that is not fragmented!
+
 #### The ICMP Header
 Has the following:
 1. `Type` field

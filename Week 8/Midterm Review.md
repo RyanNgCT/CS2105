@@ -77,4 +77,3 @@ for the objects
 - each segment max ($MSS = 1500$, the actual length $= 1500$)
 - every packet can be $\leq 1500$B
 ### Question 13
-- 
