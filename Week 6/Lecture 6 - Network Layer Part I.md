@@ -239,9 +239,9 @@ Made of of a 20 byte header
 
 - IP header has mechanisms to capture fragmentation and reassembly information, namely
 	- identifier
-		- `id` field will only be the same for fragments from the same (bigger) datagram which was fragmented
+		- `id` field will **only be the same for fragments** from the **same (bigger) datagram** which was fragmented
 	- flags
-		- `frag`: set to $1$ if there is a next fragment incoming, $0$ if no subsequent segments (the last one)
+		- `frag`: set to $1$ if $\exists$ a next fragment incoming, $0$ if **no subsequent segments** (the last one)
 			- also not set if size $\leq$ MTU (i.e. no fragment needed).
 	- fragment offset
 		- captures the byte offset (but counts in units of 8-bytes, or is DWORD aligned)

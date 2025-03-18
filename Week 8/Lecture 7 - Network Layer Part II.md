@@ -142,4 +142,46 @@ We are looking at the past (it is already the old information), but we still pro
 - we guarantee the shortest path
 - provide a best-effort service, but **do not guarantee** anything
 - hops in between need to have a transport layer protocol running on it, just have to have network layer protocols
-### ICMP Protocol
+## I. ICMP Protocol
+- protocol that is used for *diagnostics by network engineers* and users
+	- used for error reporting (i.e. unreachable host, network, port, protocol etc.)
+- we may have used it before, but not be aware that we are using it
+- stands for **Internet Control Message Protocol**
+- used for echo request using the `ping` command (which is using ICMP)
+
+- ICMP messages are carried in IP datagrams
+	- the ICMP header starts after the IP header itself
+
+- we can have Internet without ICMP (would not break without its absence)
+	- a router or server not implementing ICMP is still considered to be a valid router
+	- some servers may not even respond to the ICMP Echo request with a response
+		- requires some resources to respond the incoming ICMP Echo requests
+
+#### The ICMP Header
+Has the following:
+1. `Type` field
+2. `Code` field
+3. Checksum
+![selected-icmp-type-code](../assets/selected-icmp-type-code.png)
+
+#### The `ping` command
+- creates an ICMP echo request destined to the IP address of the domain name supplied or just the IP address itself.
+- ICMP server will respond with an Echo reply
+	- \# bytes from `src_ip`: `seq_no` `ttl` `time`
+
+- ping output will also show the aggregate details
+	- min, max and average RTT timings in milliseconds (i.e. `ms`)
+#### TTL Field
+- the `TTL` field is present in the IPv4 header to ensure that packets don't stay in a network infinitely (drops the packet after a certain number of hops)
+- Router drops the packet once the TTL becomes zero, TTL is decremented at each hop
+#### `traceroute`
+- uses the concept of TTLs
+- sends a series of small packets across the network with different TTL values and attempts to display the route that the messages would take to get to a remote host
+	- use the ICMP Echo response and TTL to find out if the TTL has expired (i.e. Type `11`, Code `0` as per above).
+	- can determine where each router is place and how many hops between requestor and each of the routers (supposing all of them respond with the TTL expired ICMP packet)
+	- can also see the points where there is communication to the Internet Exchange Points (IXPs)
+
+- routers may send no reply due to VPN/Firewall policy blocking ICMP packets
+
+- if we have multiple different entries in a single hop in ICMP output, it could mean that the router can route the packets through different paths to get to the same endpoint (for load balancing purposes).
+	- provides resiliency to the network
