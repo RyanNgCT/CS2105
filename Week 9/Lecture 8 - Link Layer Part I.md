@@ -98,8 +98,8 @@
 - wait for someone to stop transmitting before (re-)transmitting
 
 #### 3. Carrier Sense Multiple Access
-- listen before transmitting
-- still have the issue of collision because of propagation delay
+- listen before transmitting (check if channel is in use, i.e. someone is transmitting on the medium)
+- *still have the issue of collision* because of **propagation delay**
 - continues to transmit even though it detects the collision
 
 #### 4. Carrier Sense Multiple Access / Collision Detection (CSMA/CD)
@@ -227,7 +227,6 @@ $max(D_{\text{prop}})$ guarantees that we can communicate to the farthest node
 - multiple channels have data transmitting, but they do not interfere with one another
 - unused transmission time in frequency bands go idle
 - example: in FM radio (tune the radio to a particular channel or frequency) and satellite systems
-
 ##### Properties (exact same as in TDMA)
 1. It is **collision free**: since there is an allocated time to transmit
 
@@ -242,14 +241,73 @@ $max(D_{\text{prop}})$ guarantees that we can communicate to the farthest node
 4. It is **decentralized**
 	1. only coordination is to make sure the clocks of all nodes are synchronised
 
-
 ---
 ## C. Error Detection & Correction
-
 ### Motivation
-- we are focusing on the underlying error-prone link
-- when we send a datagram, the data being transmitted should carry some information which can be used for error-detection and checking.
+- we are focusing on the underlying **error-prone link**
+- when we send a datagram, the data being transmitted $D$ should carry some information which can be used for **error-detection** and checking (and possibly correcting the error)
+	- no guarantee that whatever is transmitted will be delivered
 
-### C1. Parity Bit Checks
+- receiver may receive $D'$, i.e. not the full and correct version of $D$.
+	- receiver has to make a decision whether to accept and forward the packet up to the network layer **if no error detected** or discard the packet (if $D \neq D'$)
+	- as a result, we want to have an error detection scheme that reduces the chances of missing the error
 
-### C2. Cyclic Redundancy Check (CRC)
+- Goal (quite impossible): achieve reliable data communication over an inherently unreliable network medium
+![error-detection-model](../assets/error-detection-model.png)
+- Error detection schemes are **not 100% reliable**
+
+**Trivial Error Detection**
+- copy and send the same exact data as a contiguous block right after the data itself
+	- we send $2n$ bits instead of $n$
+	- chop into two halves and then do the error checking (bit-by-bit comparison)
+
+### C1. Checksum (recap)
+- treat the segment contents as a sequence of $16$-bit integers
+- perform $1$'s complement on the sum of segment contents
+### C2. Parity Bit Checks
+#### Single bit parity
+- Notation: $D \implies$ the whole data segment to be sent, $d\implies$ **# bits** to be sent or transmitted
+- want to ensure that # bits set to $1$ is **even**
+	- if not so, we augment or "pad" the number of bits such that it fulfils the even criteria
+
+- sender simply includes one additional bit
+	- For **Even Parity Scheme**
+		- if total # $1$s (set bits) is even, then set parity to $0$
+		- if total # $1$s (set bits) is odd, then set parity to $1$ 
+		- choose the value s.t. total # of $1$s in the $d + 1$ bits is **even**
+
+- good for **detecting single bit errors** in data
+	- detects an odd number bit flips (total # $1$s in the bit counts increasing or decreasing)
+	- cannot detect an even number of single bit flips or error
+
+- it works exceptionally well mathematically
+	- probability of multiple bit errors if low, assuming that these errors are independent (for $n$ bits, we have $\frac{1}{2^n}$), which is **not true** in reality
+	- errors are *clustered together in bursts* (unable to detect, depending on the length of the bursts
+		- $P(\text{Undetected}) \cong 50$
+#### 2D parity
+- single bit parity is the basis for defining two-dimensional parity
+- we arrange the data as a matrix of $i$ rows and $j$ columns
+- we generate parity for each of the rows and columns separately
+	![2D-parity](../assets/2D-parity.png)
+
+- we will obtain $i + j + 1$ parity bits in total
+	- resultant $i + j + 1$ parity bots comprise the link-layer frame error detection bits.
+	- corner parity bit is generated based on column and row parities
+
+- we should use the same parity scheme across all rows and columns (decide on whether we want to use odd or even parity)
+
+**Properties**
+1. Can **detect and correct** single bit errors in data (up to one bit)
+	1. using the $i^{\text{th}}$ row $j^{\text{th}}$ column bits (pinpoint the location and flip the bit to the correct one)
+
+2. Can **detect** any two bit error in data (but cannot correct)
+	1. can detect parity errors at two rows or two columns
+	2. there is no unique way to fix the error (possible overlap with correct bits)
+
+3. Overhead associated with sending the parity together with the data as well.
+	1. cost of taking up some space as part of the MSS
+### C3. Cyclic Redundancy Check (CRC)
+- very much misunderstood error detection scheme
+- simplistic and efficient
+
+- assumption that we wish to transmit non-binary data $D$, without any error to another end
