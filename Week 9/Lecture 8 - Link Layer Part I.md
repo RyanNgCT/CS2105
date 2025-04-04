@@ -157,7 +157,6 @@ $max(D_{\text{prop}})$ guarantees that we can communicate to the farthest node
 
 4. This algorithm is **not decentralized**, because it makes use of a master node for coordination
 	1. the master node is a single point of failure
-
 #### 2. Token-passing
 - a special frame, a token is passed from one node to another sequentially
 - the token has to be held by a node before the node is permitted to transmit data (like a mic)
@@ -310,4 +309,19 @@ $max(D_{\text{prop}})$ guarantees that we can communicate to the farthest node
 - very much misunderstood error detection scheme
 - simplistic and efficient
 
-- assumption that we wish to transmit non-binary data $D$, without any error to another end
+#### Motivation -- The Problem
+Assumption that we wish to transmit **non-binary data** $D$, without any error to the receiver
+- $D$ is a $d$ digit number is augmented by $R$ which is the checking code, of size $r$ digits, where $d, r \in \mathbb{Z}^{+}$
+- $R$ is the augmented data known as the EDC, or Error Detection and Correction bits
+- Constraint: 
+	- small number of addition bits to be transmitted
+	- generate the checking bits $R$, s.t. the sender can compute $R$ easily though the checking algorithm
+	- make sure that the receiver can also **easily verify** the integrity of $D$, through the use of $R$ (errors should be easily detectable by the recipient)
+
+#### Motivation -- The Solution
+- consider the mathematical properties of division (remainder and quotient)
+	- we shall use a special $r$-digit number $G$, known as the Generator.
+
+- using modulo arithmetic by $k$, where $D \geq k$, we observe that there can be bit flips that result in the check matching.
+
+- 
