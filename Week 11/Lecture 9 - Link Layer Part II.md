@@ -129,3 +129,23 @@ What is the size or the length of the data?
 3. filter or drop packet
 
 - MAC address $\implies$ only need unique one hop (i.e. Virtual Machine to host comms)
+
+## Interconnecting Switches
+- switches must be connected in a hierarchy in a spanning tree
+- switch buffers has overflown (both the one accepting ingress and giving out egress packets)
+
+- everything is a single hop away
+
+---
+### MAC Address
+- every network interface has a MAC address (a.k.a. physical or LAN address)
+	- used to send and receive link layer frames
+	- uniquely identify each of the interface cards (both the sender and the receiver)
+
+- when adapter receives frame, checks if `dest_addr` matches its own MAC address
+	- if yes, then extract enclose datagram and pass it on to next level in protocol stack (network layer)
+	- if no, then just drop the datagram (discard operation), without interrupting the host
+
+- is typically $48$ bits (i.e. $8$ bytes) long and burnt into the NIC ROM
+	- is in hexadecimal notation
+

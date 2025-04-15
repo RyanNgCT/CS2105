@@ -63,8 +63,8 @@
 ## B. Multi-Access Links and Protocols
 - Multiple Access: who can talk, when they can talk and for how long
 #### Motivation
-- Random access protocol: No coordination, Collisions are possible
-- Taking Turns: Each person gets some time to speak
+- Random access protocol: No coordination is occurring, Collisions are possible
+- Taking Turns: Each person gets *some time* to speak
 - Channel Partition: divide the channel into fixed smaller pieces
 - Increasing complexity as we go down (i.e. we have more rules required)
 
@@ -72,35 +72,79 @@
 	- collisions are harder to recover from while coordinating and implementing scheduled messages are easier
 
 #### Ideal Multiple-Access Protocol
-- Mandatory Requirement: no out-of-band signalling
-	- control signal and data **goes through the same channel**
+**Properties** (given a broadcast channel of rate $R$ bps)
+1. *Collision Free*
+2. *Efficient*: when only $1$ node wants to transmit, it can transmit at the **full rate** $R$.
+3. *Fairness*: when there are $m$ nodes that want to transmit, each can send at average rate of $\frac{R}{m}$
+4. *Fully Decentralised*: should not be a special node to coordinate transmissions (no central coordination required)
+5. ⚠️ Mandatory Requirement: ==*no out-of-band signalling*==
+	- *control signal and data* **goes through the same channel** (no using an external channel as a control path medium)
 	- recover from all failures and errors on the **same channel**
+	- principle of "don't use what is not allocated to you"
 ### B1. Random Access Protocols
 - when node has something to send, just send (no need coordinate)
-- random access protocols specify how to detect collisions and how to recover from collisions
+- random access protocols specify how to **detect** collisions and how to **recover from** collisions
 - protocols should identify how much of the $L$ bits are the relevant data (cannot be exceeded or reduced)
+- Slotted and Pure ALOHA is used for wireless communication in theory, but only pre ALOHA was put into practice
 #### 1. Slotted ALOHA
 - has a clock
-- break into packets of size $L$ bits and only transmit at a certain time slot
-- No Collision $\implies$ transmission successful, Collision $\implies$ retransmit
-	- retransmission using "coin toss" with probability $p$
+	- time is divided into slots of **equal length** $\implies \text{length} = \text{time to transmit 1 frame} = \frac{L}{R}$ (transmission delay)
+	- nodes only transmit at the beginning of a slot and time is synchronized at each node
+	
+- *no coordination* among nodes
+	- is decentralised as we don't need any server. Only thing we need to **synchronize** or coordinate is the **clock cycles**
 
-- efficiency $\implies$ utilization (i.e. the entire bandwidth of $R$)
-- is decentralised as we don't need any server. Only thing we need to synchronize or coordinate is the clock cycles
+- break data into frames of size $L$ bits and only transmit at a certain time slot (usually $\lt$ MTU)
+##### Operation
+1. When have frame to send, wait until beginning of next slot and transmit the entire frame in the slot
+2. No Collision $\implies$ transmission successful
+3. Collision $\implies$ retransmit the frame again
+	- *Issue:* What would happen if the frame sent by two nodes collide and then they retransmit again?
+		- *Solution:* retransmission using "coin toss" with probability $p$ (so unlikely to retransmit and collide and the same time)
+		- *Another Problem:* can retransmit for every time slot allocated
+
+4. Slotted ALOHA algorithm will continue on until all nodes transmit the frames that they want to send successfully
+![slotted-ALOHA](../assets/slotted-ALOHA.png)
+##### Properties
+- is *not* a *collision free* protocol
+- it is **efficient** $\implies$ utilization is $100\%$ (i.e. use the entire bandwidth of $R$), assuming that only one node is active at a time
+- if is not efficient when there are **many** active nodes transmitting (max efficiency $\approx 37\%$) $\implies$ slots will be wasted due to them being empty
+- it is a perfectly fair protocol
+- it is fully decentralised beside having to coordinate the clocks across nodes
 #### 2. Pure / Unslotted ALOHA
-- no time slots with no synchronization
-- interfered by all nodes transmitting between $t_0 - 1$ and $t_0 + 1$
-- reduced efficiency as compared to Slotted ALOHA
+- **no time slots** with no synchronization
+	- a frame transmits immediately when it wishes to send data
+- interference is generated when there transmissions beginning at between $t_0 - 1$ and $t_0 + 1$ and $t_0$ 
+	- *probability of collision* has actually **doubled** as compared with Slotted ALOHA
+
+	![pure-ALOHA](../assets/pure-ALOHA.png)
+##### Operation
+1. Send the entire frame
+2. If no collision, assume data transmission is a success
+3. If $\exists$ collision $\implies$ wait for 1 frame transmission time before retransmitting (happens until the entire frame is successfully transmitted)
+	- like Slotted ALOHA, retransmission here is also done with probability $p$
+##### Properties
+- is *not* a *collision free* protocol
+- it is **efficient** $\implies$ utilization is $100\%$ (i.e. use the entire bandwidth / has a throughput of $R$), assuming that only one node is active at a time
+- if is not efficient when there are **many** active nodes transmitting (max efficiency $\approx \textbf{18}\%$) $\implies$ slots will be wasted due to them being empty
+	- reduced efficiency as compared to Slotted ALOHA
+- it is a perfectly fair protocol
+- it is fully decentralised beside having to coordinate the clocks across nodes
+##### Major Drawback of Slotted/Pure ALOHA
+- cannot detect a collision 
+	- all the nodes pay **no attention** to what is happening on the channel (i.e. if another node is transmitting at that point in time)
 
 **How do you detect a collision?**
-- when we hear someone else
-- when there is $\gt 1$ signal
-- wait for someone to stop transmitting before (re-)transmitting
-
+- when we hear someone else (receive something that you did not transmit)
+- when there is $\gt 1$ signal (usually $2$)
+- wait for someone to stop transmitting before (re-) transmitting
 #### 3. Carrier Sense Multiple Access
 - listen before transmitting (check if channel is in use, i.e. someone is transmitting on the medium)
-- *still have the issue of collision* because of **propagation delay**
-- continues to transmit even though it detects the collision
+	- sensed to be idle: transmit the entire frame
+	- sensed to be busy: defer transmission until channel is idle again
+- *still have the issue of collision* because of **propagation delay** on the rest of the nodes end when one nodes starts to transmit
+- nodes continues to transmit even though it has detected the collision
+
 
 #### 4. Carrier Sense Multiple Access / Collision Detection (CSMA/CD)
 - detected by the network interface card
@@ -323,5 +367,3 @@ Assumption that we wish to transmit **non-binary data** $D$, without any error t
 	- we shall use a special $r$-digit number $G$, known as the Generator.
 
 - using modulo arithmetic by $k$, where $D \geq k$, we observe that there can be bit flips that result in the check matching.
-
-- 
