@@ -131,10 +131,14 @@ What is the size or the length of the data?
 - MAC address $\implies$ only need unique one hop (i.e. Virtual Machine to host comms)
 
 ## Interconnecting Switches
-- switches must be connected in a hierarchy in a spanning tree
-- switch buffers has overflown (both the one accepting ingress and giving out egress packets)
+- switches **must** be connected in a **hierarchy** in a spanning tree
+	- should ensure that the topology takes the form of a spanning tree
+	- should not have loops in it (due the the lack of the TTL field in ethernet frames) $\implies$ packet could get stuck in the network
+		- switches are overloaded
+		- switch buffers has overflown (both the one accepting ingress and giving out egress packets are overflown) $\implies$ occupied by packets that **do not need servicing anymore**
+		- buffer size keeps getting reduce in each iteration (and eventually will run out due to the **finite size** of the buffer)
 
-- everything is a single hop away
+- there are no hops in a LAN, everything is a **single hop away** (we are only concerned with this model and let the above layers handle multi-hop)
 
 ---
 ### MAC Address

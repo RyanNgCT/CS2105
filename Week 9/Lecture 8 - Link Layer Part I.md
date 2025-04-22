@@ -295,6 +295,8 @@ $max(D_{\text{prop}})$ guarantees that we can communicate to the farthest node
 	- receiver has to make a decision whether to accept and forward the packet up to the network layer **if no error detected** or discard the packet (if $D \neq D'$)
 	- as a result, we want to have an error detection scheme that reduces the chances of missing the error
 
+- error detection should be **probabilistic**
+
 - Goal (quite impossible): achieve reliable data communication over an inherently unreliable network medium
 ![error-detection-model](../assets/error-detection-model.png)
 - Error detection schemes are **not 100% reliable**
@@ -308,6 +310,7 @@ $max(D_{\text{prop}})$ guarantees that we can communicate to the farthest node
 - treat the segment contents as a sequence of $16$-bit integers
 - perform $1$'s complement on the sum of segment contents
 ### C2. Parity Bit Checks
+- underlying principle is to detect half the errors
 #### Single bit parity
 - Notation: $D \implies$ the whole data segment to be sent, $d\implies$ **# bits** to be sent or transmitted
 - want to ensure that # bits set to $1$ is **even**
@@ -350,20 +353,21 @@ $max(D_{\text{prop}})$ guarantees that we can communicate to the farthest node
 3. Overhead associated with sending the parity together with the data as well.
 	1. cost of taking up some space as part of the MSS
 ### C3. Cyclic Redundancy Check (CRC)
-- very much misunderstood error detection scheme
+- very much *misunderstood* error detection scheme
 - simplistic and efficient
-
 #### Motivation -- The Problem
 Assumption that we wish to transmit **non-binary data** $D$, without any error to the receiver
-- $D$ is a $d$ digit number is augmented by $R$ which is the checking code, of size $r$ digits, where $d, r \in \mathbb{Z}^{+}$
-- $R$ is the augmented data known as the EDC, or Error Detection and Correction bits
-- Constraint: 
+- $D$ is a $d$ digit number is augmented by $R$ which is the checking code, of **size** $r$ digits, where $d, r \gt 0$
+- $R$ is the *augmented data* known as the EDC, or ***Error Detection and Correction bits***
+- **Constraint:** 
 	- small number of addition bits to be transmitted
 	- generate the checking bits $R$, s.t. the sender can compute $R$ easily though the checking algorithm
 	- make sure that the receiver can also **easily verify** the integrity of $D$, through the use of $R$ (errors should be easily detectable by the recipient)
-
 #### Motivation -- The Solution
 - consider the mathematical properties of division (remainder and quotient)
-	- we shall use a special $r$-digit number $G$, known as the Generator.
+	- we shall use a special $r$-digit (of size $r$) number $G$, known as the Generator.
 
 - using modulo arithmetic by $k$, where $D \geq k$, we observe that there can be bit flips that result in the check matching.
+- every number sent by the sender is guaranteed to be divisible by $G$ (see CS1231S divisibility property)
+	- each number is a multiple of $7$
+	- both of what is send looses the original data

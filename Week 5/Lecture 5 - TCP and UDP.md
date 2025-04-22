@@ -54,6 +54,8 @@ UDP header format not tested, but have to know what are the header fields
 
 - guaranteed to detect single bit flips (does not guarantee $\geq 2$ bits and more)
 
+- ensures that when we add up all individual $16$-bits in the "block", we get all zeroes
+
 **RFC 768 algo**
 - Split into $16$-bit integers
 - add all integers (`add`) on bit level, carry out is added again to each result (i.e. wrap around).
