@@ -63,7 +63,7 @@
 ## B. Multi-Access Links and Protocols
 - Multiple Access: who can talk, when they can talk and for how long
 #### Motivation
-- Random access protocol: No coordination is occurring, Collisions are possible
+- Random access protocol: **No coordination** is occurring, Collisions are possible
 - Taking Turns: Each person gets *some time* to speak
 - Channel Partition: divide the channel into fixed smaller pieces
 - Increasing complexity as we go down (i.e. we have more rules required)
@@ -145,7 +145,6 @@
 - *still have the issue of collision* because of **propagation delay** on the rest of the nodes end when one nodes starts to transmit
 - nodes continues to transmit even though it has detected the collision
 
-
 #### 4. Carrier Sense Multiple Access / Collision Detection (CSMA/CD)
 - detected by the network interface card
 - don't transmit the remaining frame (time delay is for the jamming signal)
@@ -154,7 +153,7 @@
 - the retransmission probability should keep decreasing
 	- However, probability of collision stays the same
 	- we can reduce the probability further on each round of collision
-		- exponential backoff
+		- **exponential backoff** (unlike Slotted ALOHA which is linear backoff - sorta)
 		- is not deterministic since we are still using probability
 	- $\uparrow$ collision $\uparrow$ backoff
 
@@ -195,7 +194,7 @@ $max(D_{\text{prop}})$ guarantees that we can communicate to the farthest node
 	2. the master will only poll node $i$ if all the other nodes have relinquished the ability to transmit
 
 2. We have a **higher efficiency**, but we still have the overhead associated with polling
-	1. We cannot fully obtain the bandwidth
+	1. We *cannot fully obtain* the bandwidth $R$
 
 3. It is **perfectly fair**, since we are going in a round-robin fashion
 

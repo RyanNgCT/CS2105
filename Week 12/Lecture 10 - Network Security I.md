@@ -173,6 +173,7 @@ Example: **Polyalphabetic Cipher**
 	- notation: $K_x^+ \to$ public key, $K_x^- \to$ private key
 	- private key is only **known to the owner** of the key
 ![asymmetric-crypto](../assets/asymmetric-crypto.png)
+
 #### Public Key Encryption Algorithms
 Require the following:
 1. The recipients private and public encryption algorithms $K_B^-(.)$ and $K_B^+(.)$, such that $m = K_B^-(K_B^+(m))$
@@ -181,7 +182,7 @@ Require the following:
 
 - The requirements of PK Encryption / Infra is still the same: send the message as a ciphertext over the insecure channel
 ### Rivest-Shamir-Adleman Algorithm (RSA)
-- uses the fact that it is very hard to factorise large prime numbers
+- ⚠️ Key property: uses the fact that it is **very hard to factorise large prime numbers**
 - is a very **computationally expensive** process (to generate the key pair)
 	- does not make sense to use RSA to encrypt large amounts of data
 	- DES (symmetric) is $\approx 100 \times$ faster than RSA, but requires the prior knowledge of the shared symmetric key $K_S$
@@ -207,7 +208,8 @@ $$
 	- the problem of symmetric key distribution will be solved
 
 - used in HTTPS (HTTP w SSL), SSH
-	- fingerprint of the public key $\implies$ the recipient provides the sender (SSH client) with the public key in the first instance
+	- fingerprint of the public key $\implies$ the recipient provides the sender (SSH client) with the hash of the public key in the first instance
+		- don't have the ability to verify the certificate in the first instance (the certificate is not from a trusted CA)
 	- public key is used each time to start a session
 
 - the exponent for the RSA math changes from $d$ to $e$ with respect to decryption and encryption operations respectively
@@ -269,3 +271,7 @@ To decrypt:
 $$
 K_B^-(K_B^+(m)) = m = K_B^+(K_B^-(m))
 $$
+
+---
+### Lecture Quiz
+![lq10-qn2](../assets/lq10-qn2.png)

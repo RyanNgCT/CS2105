@@ -52,6 +52,7 @@
 **Length, min and max length**
 The size of the frame is bounded by the upper and lower limits of $[46, 1500]$
 - MTU $= 1500$ bytes
+- MTU = MSS + IP Header + TCP Header
 
 What is the size or the length of the data?
 - there is something called the Inter-frame gap which is introduce to demarcate the end of a frame
@@ -144,12 +145,62 @@ What is the size or the length of the data?
 ### MAC Address
 - every network interface has a MAC address (a.k.a. physical or LAN address)
 	- used to send and receive link layer frames
-	- uniquely identify each of the interface cards (both the sender and the receiver)
+	- **uniquely identify** each of the interface cards (both the sender and the receiver)
+		- primarily used for filtering packets based on the addresses
 
 - when adapter receives frame, checks if `dest_addr` matches its own MAC address
-	- if yes, then extract enclose datagram and pass it on to next level in protocol stack (network layer)
-	- if no, then just drop the datagram (discard operation), without interrupting the host
+	- if **yes**, then **extract** enclosed datagram and pass it on to next level in protocol stack (network layer)
+	- if **no**, then just **drop** the datagram (discard operation), without interrupting the host
 
-- is typically $48$ bits (i.e. $8$ bytes) long and burnt into the NIC ROM
-	- is in hexadecimal notation
+- is typically $48$ bits (i.e. $6$ bytes) long and burnt into the NIC ROM
+	- is in hexadecimal notation (first $3$ bytes are vendor specific)
+	- exceptions whereby sometimes it is software-settable / configurable
 
+**Special MAC Addresses & Allocation of MACs**
+- `FF:FF:FF:FF:FF:FF` $\to$ broadcast address
+- MAC address allocation (by blocks) is administered by IEEE
+	- 1st $3$ bytes: vendor or OEM of NIC adapter
+	- Last $3$ bytes: specific product (i.e. $\approx 16,777,216$)
+		- `00-00-00` to `FF:FF:FF`
+
+	- every device has a **globally unique MAC address** (including virtual network cards)
+
+| **Address Type** | **Length** | **Purpose**                                                                                                    | **Nature**                                                                                 |
+| :--------------- | :--------- | :------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **IP address**   | 32 bits    | Network-layer address used to move **datagrams** from *source to destination* (multiple links, multiple hops). | - Can be dynamic or statically configured<br><br>- Hierarchical (for facilitating routing) |
+| **MAC address**  | 48 bits    | Link-layer address used to move **frames** over every **single link**.                                         | - Permanent, cannot override (identifies the hardware)<br><br>- No sense of Hierarchy      |
+
+
+**Why use IP Addresses instead of MAC for routing?**
+- forwarding table stores the unique prefix, instead of storing every single unique MAC
+	- significant reduce the size of forwarding tables by using systematic IP allocation $\implies$ allow for **Address Aggregation**
+	- mapping saved is unique IP prefix : link to fwd to (minimal in nature)
+	- mapping doesn't help with address aggregation and hierarchy
+
+- furthermore, people move around, then how to go about registering MAC at each new location / network for the routing service?
+	- not guaranteed that every machine in our network has the same manufacturer
+
+## Address Resolution Protocol (ARP)
+#### Motivation
+- Link Layer: want to transmit data over only a single hop (between adjacent nodes over a single link)
+	- IP Datagrams are encapsulated in link-layer frames for transmission (need to rely on IP addresses)
+
+- can use DNS to get the mapping from `hostname`: `IP address`
+	- still need to get `IP address`: `MAC Address` (for each hop) $\implies$ what is `dst_MAC`
+
+#### Features of ARP
+- provides a query mechanism to learn an endpoint's MAC address
+	- query a MAC address for a **given IP Address**
+	- don't wish to query the MAC address for every single datagram to be sent
+
+- each IP node has an ARP table which stores:
+	- **`IP address`** (32 bits) **: `MAC Address`** (48 bits) **: `TTL`**
+	- `TTL` is usually a few mins, ensures entry don't look stale
+	- sometimes includes *type* field as well
+
+- `__gateway` refers to the destination MAC of the default gateway
+
+- any new mapping done with ARP will result in a new entry for a particular IP : MAC: TTL $3$-tuple in the ARP table
+
+- for any IP communication happening on the link layer, we need to know the corresponding next-hop MAC address to send to
+	- MAC address used to construct the frame which encapsulates the IP datagram

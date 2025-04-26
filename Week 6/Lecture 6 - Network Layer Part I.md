@@ -79,10 +79,10 @@
 	- address aggregation enables IPs of the same kind to start with the same prefix
 
 #### Reserved Addresses
-Refer to RFC 5735
+Important: **Refer to RFC 5735**
 1. Non-routable $\implies$ `0.0.0.0/8` (which is also used for DHCP)
 2. Loopback interface $\implies$ `127.0.0.1/8` (although mask is usually `/32` in CIDR)
-3. Private addresses $\implies$ `10.0.0.0/8`, `172.16.0.0/12` and `192.168.0.0/16`\
+3. Private addresses $\implies$ `10.0.0.0/8`, `172.16.0.0/12` and `192.168.0.0/16`
 4. Broadcast $\implies$ `255.255.255.255/32`
 
 #### Network Interfaces
@@ -125,19 +125,19 @@ Refer to RFC 5735
 - all connections are uniquely identified by the four-tuple:
 	- `src_ip` (will all be the same regardless of host), `dst_ip`
 	- `src_port`, `dst_port`
-		- degree of freedom is determined by the randomly chosen `src_port` in the address translation from private to public
+		- degree of freedom is determined by the randomly chosen `src_port` in the address translation from private to public $\implies$ to **uniquely identify** individual connections
 
 	- incoming connections, `dst_ip` and `dst_port` is replaced with the corresponding client's tuple as stored within the NAT translation table
 
 ### NAT Implementation
-- routers must replace the source IP and port of every outdoing datagram to the "master" NAT IP address and port
+- routers must replace the source IP and port of every outgoing datagram to the "master" NAT IP address and port $\implies$ public routable IP
 - routers need to remember the mapping from source IP and port to NAT IP and port
 - routers must replace NAT IP address and port with the corresponding source IP and port stored in the NAT translation table for every incoming datagram packet.
 - good alternative to IPv6 (a much more elegant solution)
 	- NAT is an invisible piece of technology to resource providers
 
 - possible to have a hierarchy of NAT servers
-- we can have up to $2^{16} - 1024 \approx 64,000$ connections
+- we can have up to $2^{16} - 1024 \approx 64,000$ connections (based on available port numbers)
 - because the limiting factor is the port number field, which is 16-bits in length)
 	- need to subtract common port numbers as well
 
@@ -197,7 +197,9 @@ Discover, Offer, Request, Acknowledge (DORA)
 - Lifetime field is only populated after Offer stage.
 - `transactionID` field denotes which Offer is for which corresponding Discover.
 - why the need to send "another" request when we already have an offer?
-	- mitigate the case of multiple DHCP servers $\implies$ multiple DHCP servers responding to the offer, so only can pick 1 offer (property that IP address has to be unique applies in private network as well).
+	- mitigate the case of multiple DHCP servers $\implies$ having a "request" packet aside from the offer mitigates the multiple DHCP servers **assigning the same host** with any entry in their list of **IP addresses** in larger networks  (property that IP address has to be unique applies in private network as well)
+		- confirms the client's choice (especially if there were multiple offers).
+		- tells all other DHCP servers that they were **not chosen**, so they can **release** their offered IPs.
 
 #### More on DHCP
 - is a configuration protocol, so it provides much more than just merely IP address 
@@ -226,14 +228,13 @@ Made of of a 20 byte header
 
 - Source IP (32 bits)
 - Destination IP (32 bits)
-
 - thereafter followed by the data
 
 #### IP Fragmentation
-- different physical links may have capacity / different maximum transfer unit (MTU)
+- different physical links may have **different** capacity / maximum transfer unit (MTU)
 	- it is the largest amount of data that a link level (ethernet) frame can carry
 
-- we may have IP datagrams which are too large to be fragmented by the routers $\implies$ one datagram becomes several smaller datagrams (or smaller MTUs)
+- we may have IP datagrams which are too large, which are **to be fragmented** by the routers $\implies$ one datagram becomes several smaller datagrams (or smaller MTUs)
 
 - fragmentation can be done at the router level, while reassembly is only done at the destination
 
