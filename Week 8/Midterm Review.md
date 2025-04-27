@@ -64,7 +64,6 @@ for the objects
 
 - Option E: non-persistent connection
 	- need to establish TCP connection anyways, there is no change in the overall time in end end ($4R + a + b$)
-
 ### Question 9
 - need to look at $A$ records to determine the IP address
 - webmail here does not matter

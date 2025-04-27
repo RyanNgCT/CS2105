@@ -1,4 +1,4 @@
-#### Question 1a) Give an example IP address assignment to all interfaces in this home network.
+h#### Question 1a) Give an example IP address assignment to all interfaces in this home network.
 ![tut6-q1](../assets/tut6-q1.png)
 
 - Router Internal: `192.168.1.1`

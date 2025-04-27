@@ -208,6 +208,7 @@ What if the network channel can now reorder segments (will cause RDT 3.0 will br
 - same assumptions as `rdt 3.0`
 ### Go-Back-N
 - also called the cumulative ACK protocol, where ACK $n$ means $1, 2, \ldots \leq n$ are received.
+- retransmits everything in its sliding window when there is a timeout
 
 **Properties**
 1. Dark green (ACK-ed)

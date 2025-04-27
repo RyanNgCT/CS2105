@@ -89,7 +89,7 @@ Keep-Alive: timeout=5, max=100\r\n
 ### DNS Resource Record
 There are a few resources stored on a domain
 1. `A` or `AAAA` $\implies$ the hostname
-	- Multiple `A` records are meant for load balancing reasons
+	- Multiple `A` records are meant for load balancing reasons (`A` is for IPV4, `AAAA` is for IPV6)
 	- world wide web to access the web server
 
 2. `MX` $\implies$ mail
@@ -124,6 +124,8 @@ mail.google.com internet address = 172.217.194.18
 			- manages domains below them
 			- can also be maintained by ISPs
 
+		- the list of root DNS servers is hard-coded with every device
+
 	- Local DNS Server
 		- does not belong to the hierarchy of DNS servers
 		- sits on the local network (i.e. university campus network, company, residential ISPs)
@@ -131,6 +133,8 @@ mail.google.com internet address = 172.217.194.18
 		- obeys the keep-alive for the DNS record
 
 		- any DNS queries made are sent to the local DNS servers first (i.e. `resolver8.nus.edu.sg`)
+
+- we can **ignore `TXT`** records and instead look at the others (`A`, `AAAA`, `CNAME`, `NS`, `MX`)
 ### Recursive versus Iterative DNS Query
 - Iterative $\implies$ don't need to waste time going through the root DNS Servers
 	- ownself settle ownself

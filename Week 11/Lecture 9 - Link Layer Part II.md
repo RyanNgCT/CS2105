@@ -157,11 +157,11 @@ What is the size or the length of the data?
 	- exceptions whereby sometimes it is software-settable / configurable
 
 **Special MAC Addresses & Allocation of MACs**
-- `FF:FF:FF:FF:FF:FF` $\to$ broadcast address
+- `FF-FF-FF-FF-FF-FF` $\to$ broadcast address
 - MAC address allocation (by blocks) is administered by IEEE
 	- 1st $3$ bytes: vendor or OEM of NIC adapter
 	- Last $3$ bytes: specific product (i.e. $\approx 16,777,216$)
-		- `00-00-00` to `FF:FF:FF`
+		- `00-00-00` to `FF-FF-FF`
 
 	- every device has a **globally unique MAC address** (including virtual network cards)
 
@@ -179,7 +179,6 @@ What is the size or the length of the data?
 
 - furthermore, people move around, then how to go about registering MAC at each new location / network for the routing service?
 	- not guaranteed that every machine in our network has the same manufacturer
-
 ## Address Resolution Protocol (ARP)
 #### Motivation
 - Link Layer: want to transmit data over only a single hop (between adjacent nodes over a single link)
@@ -187,7 +186,6 @@ What is the size or the length of the data?
 
 - can use DNS to get the mapping from `hostname`: `IP address`
 	- still need to get `IP address`: `MAC Address` (for each hop) $\implies$ what is `dst_MAC`
-
 #### Features of ARP
 - provides a query mechanism to learn an endpoint's MAC address
 	- query a MAC address for a **given IP Address**
@@ -200,7 +198,58 @@ What is the size or the length of the data?
 
 - `__gateway` refers to the destination MAC of the default gateway
 
-- any new mapping done with ARP will result in a new entry for a particular IP : MAC: TTL $3$-tuple in the ARP table
+- for any IP communication to occur (above the link layer), we need to know the **corresponding next-hop MAC address** to send to
+	- MAC address used to construct the Ethernet frame which encapsulates the IP datagram (otherwise IP comms is impossible)
+	- any new mapping done with ARP will result in a new entry for a particular `IP : MAC: TTL` $3$-tuple in the ARP table (i.e. `ping` command issued to IP in local subnet)
 
-- for any IP communication happening on the link layer, we need to know the corresponding next-hop MAC address to send to
-	- MAC address used to construct the frame which encapsulates the IP datagram
+	![arp-command-wsl](../assets/arp-command-wsl.png)
+
+#### Sending Frames within the same subnet
+- can send directly (switch is considered to be invisible), there are **no intermediate nodes** (no router required in between)
+- ARP is a plug-and-play protocol (no configuration required by network admin)
+	- only coordination required is for the nodes to all run ARP protocol themselves (reply $\leftrightarrow$ response)
+
+**Case 1**
+- A knows B's MAC from its ARP table (i.e. $\exists$ a corresponding entry)
+- A can directly create an ethernet frame with B's MAC address as `dst_MAC` and send it
+- only B will process this frame, while other nodes will **receive and discard**
+	- this is assuming the switch does not have a corresponding entry of the destination device by its corresponding link, or that the device connecting the nodes via link is a hub (broadcast every time)
+- frame could also be directly forwarded to B if $\exists$ a switch table entry for the destination MAC address
+
+**Case 2**
+- A knows B's MAC  (i.e. it is the first request to comms with B, $\not \exists$ a corresponding local ARP table entry of A)
+- A broadcasts the ARP query packet containing B's IP address
+	- `dst_MAC` is set to local broadcast `FF-FF-FF-FF-FF-FF` (across the LAN, broadcast domain)
+	- All nodes in subnet will receive this ARP query packet, but **only host B would reply to it**, the rest *will discard*
+
+- B **replies** to A with its corresponding MAC address
+	- `src_MAC` is B's MAC, `dst_MAC` is A's MAC (to be received for processing)
+
+- A **caches** B's **`IP:MAC` mapping** in its ARP table until the **TTL** of the record **expires**
+
+![arp-same-subnet](../assets/arp-same-subnet.png)
+
+#### Sending frames to another subnet
+- A in net 1, B in net 2
+- A creates an IP datagram with `src_ip` of A, `dst_ip` of B
+- use **ARP** to find the corresponding MAC from the IP of the **default gateway** (if not already in the )
+- A creates frame encapsulating IP datagram with `src_MAC` of A, ==`dst_MAC` of router R's internal interface==, connected to net 1(`__gateway`)
+	- we cannot indicate `dst_MAC` to be B because it is not within the subnet / broadcast domain of net 1 and there is **no such IP address** corresponding to the ARP request **in the subnet** (i.e. will get discarded, due to mismatch of destination MAC $\to$ none of the nodes in net 1 have that MAC address)
+- frame is sent from A to R
+
+
+![arp-other-subnet](../assets/arp-other-subnet.png)
+
+![arp-other-subnet-2](../assets/arp-other-subnet-2.png)
+
+- frame arrives at router R, the frame is removed and passed up the layer to IP protocol 
+- R forwards datagram with `src_ip` of A, `dst_ip` of B
+	- router replaces the `dest_MAC` with that of B instead of R, `src_MAC` is that of the **outgoing router link** when creating the new frame (external interface connected to net 2) $\implies$ only valid within net 2, or the subnet itself
+	- the IP datagram embedded remains intact (i.e. no change)
+
+	![arp-other-subnet-3](../assets/arp-other-subnet-3.png)
+
+## Conclusion
+- Ethernet Technologies
+- Ethernet Switches and Switch tables
+- Journey down the complete protocol stack
